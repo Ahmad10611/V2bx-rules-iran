@@ -4,6 +4,12 @@
 sudo apt-get update
 sudo apt-get install -y dos2unix git
 
+# اگر دایرکتوری از قبل وجود دارد، آن را حذف کنید
+if [ -d "/root/V2bx-rules-iran" ]; then
+    echo "Removing existing /root/V2bx-rules-iran directory..."
+    sudo rm -rf /root/V2bx-rules-iran
+fi
+
 # دانلود اسکریپت‌ها از مخزن گیت‌هاب
 git clone https://github.com/USERNAME/V2bx-rules-iran.git /root/V2bx-rules-iran
 
@@ -11,8 +17,14 @@ git clone https://github.com/USERNAME/V2bx-rules-iran.git /root/V2bx-rules-iran
 dos2unix /root/V2bx-rules-iran/run_update_loop.sh
 dos2unix /root/V2bx-rules-iran/update_v2bx_configs.sh
 
-# ایجاد فایل سرویس systemd
-cat <<EOT >> /etc/systemd/system/run_update_loop.service
+# حذف فایل سرویس قبلی (در صورت وجود)
+if [ -f "/etc/systemd/system/run_update_loop.service" ]; then
+    echo "Removing old run_update_loop.service..."
+    sudo rm /etc/systemd/system/run_update_loop.service
+fi
+
+# ایجاد فایل سرویس systemd با محتوای جدید
+cat <<EOT > /etc/systemd/system/run_update_loop.service
 [Unit]
 Description=Run Update Loop Script
 
@@ -27,6 +39,9 @@ EOT
 # تغییر مجوز اسکریپت‌ها به قابل اجرا
 chmod +x /root/V2bx-rules-iran/run_update_loop.sh
 chmod +x /root/V2bx-rules-iran/update_v2bx_configs.sh
+
+# بارگذاری مجدد تنظیمات سرویس‌های systemd
+sudo systemctl daemon-reload
 
 # فعال‌سازی و راه‌اندازی سرویس
 sudo systemctl enable run_update_loop.service
