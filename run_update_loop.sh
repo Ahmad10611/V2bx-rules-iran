@@ -1,15 +1,9 @@
-#!/bin/bash
+[Unit]
+Description=Run Update Loop Script
 
-while true; do
-    # تبدیل اسکریپت به فرمت یونیکس
-    /usr/bin/dos2unix /root/V2bx-rules-iran/update_v2bx_configs.sh
+[Service]
+ExecStart=/bin/bash /root/V2bx-rules-iran/run_update_loop.sh
+Restart=always
 
-    # اجرای اسکریپت پیکربندی
-    /bin/bash /root/V2bx-rules-iran/update_v2bx_configs.sh
-
-    # لاگ کردن اجرای موفقیت‌آمیز
-    echo "$(date) - Script executed successfully" >> /root/cronjob_output.log
-
-    # خوابیدن برای 10 ثانیه
-    sleep 10
-done
+[Install]
+WantedBy=multi-user.target
