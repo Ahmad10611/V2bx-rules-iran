@@ -4,16 +4,17 @@
 sudo apt-get update
 sudo apt-get install -y dos2unix git
 
-# اگر دایرکتوری از قبل وجود دارد، آن را حذف کنید
+# اگر دایرکتوری از قبل وجود دارد، به مسیر بالاتر بروید و سپس دایرکتوری را حذف کنید
 if [ -d "/root/V2bx-rules-iran" ]; then
     echo "Removing existing /root/V2bx-rules-iran directory..."
+    cd /root  # تغییر مسیر به /root
     sudo rm -rf /root/V2bx-rules-iran
 fi
 
-# دانلود اسکریپت‌ها از مخزن گیت‌هاب
-git clone https://github.com/USERNAME/V2bx-rules-iran.git /root/V2bx-rules-iran
+# کلون کردن پروژه از گیت‌هاب
+git clone https://github.com/Ahmad10611/V2bx-rules-iran.git /root/V2bx-rules-iran
 
-# تبدیل اسکریپت به فرمت یونیکس
+# تبدیل اسکریپت‌ها به فرمت یونیکس
 dos2unix /root/V2bx-rules-iran/run_update_loop.sh
 dos2unix /root/V2bx-rules-iran/update_v2bx_configs.sh
 
