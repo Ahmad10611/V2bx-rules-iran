@@ -1,51 +1,42 @@
 #!/bin/bash
 
-# بروزرسانی پکیج‌ها و نصب dos2unix
-sudo apt-get update
-sudo apt-get install -y dos2unix git
-
-# اگر دایرکتوری از قبل وجود دارد، به مسیر بالاتر بروید و سپس دایرکتوری را حذف کنید
-if [ -d "/root/V2bx-rules-iran" ]; then
-    echo "Removing existing /root/V2bx-rules-iran directory..."
-    cd /root  # تغییر مسیر به /root
-    sudo rm -rf /root/V2bx-rules-iran
+# چک کردن دسترسی روت
+if [ "$EUID" -ne 0 ]; then
+  echo "لطفاً به‌عنوان کاربر روت اجرا کنید"
+  exit
 fi
 
-# کلون کردن پروژه از گیت‌هاب
+# بروزرسانی بسته‌ها
+echo "در حال بروزرسانی بسته‌های سیستم..."
+apt-get update -y
+
+# نصب git در صورت نیاز
+if ! command -v git &> /dev/null; then
+  echo "در حال نصب git..."
+  apt-get install git -y
+fi
+
+# کلون کردن مخزن
+echo "در حال کلون کردن مخزن..."
 git clone https://github.com/Ahmad10611/V2bx-rules-iran.git /root/V2bx-rules-iran
 
-# تبدیل اسکریپت‌ها به فرمت یونیکس
-dos2unix /root/V2bx-rules-iran/run_update_loop.sh
-dos2unix /root/V2bx-rules-iran/update_v2bx_configs.sh
-
-# حذف فایل سرویس قبلی (در صورت وجود)
-if [ -f "/etc/systemd/system/run_update_loop.service" ]; then
-    echo "Removing old run_update_loop.service..."
-    sudo rm /etc/systemd/system/run_update_loop.service
+# چک کردن اینکه آیا مخزن به درستی کلون شده است
+if [ ! -d "/root/V2bx-rules-iran" ]; then
+  echo "کلون مخزن با مشکل مواجه شد. نصب متوقف شد."
+  exit 1
 fi
 
-# ایجاد فایل سرویس systemd با محتوای جدید
-cat <<EOT > /etc/systemd/system/run_update_loop.service
-[Unit]
-Description=Run Update Loop Script
+# تنظیم مجوز فایل‌های JSON
+echo "تنظیم مجوزهای فایل‌ها..."
+chmod 755 /root/V2bx-rules-iran/*.json
 
-[Service]
-ExecStart=/bin/bash /root/V2bx-rules-iran/run_update_loop.sh
-Restart=always
+# افزودن اسکریپت به کرونت برای اجرا هر دقیقه
+echo "افزودن به کرونت..."
+(crontab -l 2>/dev/null; echo "* * * * * bash /root/V2bx-rules-iran/update_v2bx_configs.sh >> /root/v2bx_update.log 2>&1") | crontab -
 
-[Install]
-WantedBy=multi-user.target
-EOT
+# ریلود کردن کرون
+echo "ریلود کردن سرویس کرون..."
+service cron reload
 
-# تغییر مجوز اسکریپت‌ها به قابل اجرا
-chmod +x /root/V2bx-rules-iran/run_update_loop.sh
-chmod +x /root/V2bx-rules-iran/update_v2bx_configs.sh
-
-# بارگذاری مجدد تنظیمات سرویس‌های systemd
-sudo systemctl daemon-reload
-
-# فعال‌سازی و راه‌اندازی سرویس
-sudo systemctl enable run_update_loop.service
-sudo systemctl start run_update_loop.service
-
-echo "Installation and setup completed successfully!"
+# پیام نهایی
+echo "نصب و پیکربندی با موفقیت انجام شد. اسکریپت هر دقیقه اجرا خواهد شد."
