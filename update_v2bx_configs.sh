@@ -3,6 +3,7 @@
 # تعریف مسیر فایل‌ها
 ROUTE_FILE="/etc/V2bX/route.json"
 SING_FILE="/etc/V2bX/sing_origin.json"
+HY2CONFIG_FILE="/etc/V2bX/hy2config.yaml"
 LOG_FILE="/root/v2bx_config_update.log"  # مسیر لاگر
 FILES_CHANGED=0  # متغیری برای بررسی تغییرات
 
@@ -11,20 +12,27 @@ check_permissions() {
     local file_path="$1"
     local required_permissions="-rwxr-xr-x"
     
-    current_permissions=$(stat -c "%A" "$file_path")
-    
-    if [ "$current_permissions" != "$required_permissions" ]; then
-        echo "مجوز $file_path نادرست است. تنظیم مجوز..."
-        chmod 755 "$file_path"  # تنظیم مجوز -rwxr-xr-x
-        echo "مجوز $file_path به $required_permissions تغییر یافت."
+    if [ -f "$file_path" ]; then
+        current_permissions=$(stat -c "%A" "$file_path")
+        if [ "$current_permissions" != "$required_permissions" ]; then
+            echo "مجوز $file_path نادرست است. تنظیم مجوز..."
+            chmod 755 "$file_path"  # تنظیم مجوز -rwxr-xr-x
+            echo "مجوز $file_path به $required_permissions تغییر یافت."
+        else
+            echo "مجوز $file_path صحیح است."
+        fi
     else
-        echo "مجوز $file_path صحیح است."
+        echo "فایل $file_path موجود نیست. ایجاد فایل جدید..."
+        touch "$file_path"
+        chmod 755 "$file_path"
+        echo "فایل $file_path ایجاد شد و مجوز به $required_permissions تنظیم شد."
     fi
 }
 
 # بررسی مجوز فایل‌ها
 check_permissions "$ROUTE_FILE"
 check_permissions "$SING_FILE"
+check_permissions "$HY2CONFIG_FILE"
 
 # محتوای جدید برای فایل route.json
 NEW_ROUTE_JSON='{
@@ -186,6 +194,28 @@ NEW_SING_ORIGIN_JSON='{
   }
 }'
 
+# محتوای جدید برای فایل hy2config.yaml
+NEW_HY2CONFIG_YAML='quic:
+  initStreamReceiveWindow: 16777216
+  maxStreamReceiveWindow: 33554432
+  initConnReceiveWindow: 33554432
+  maxConnReceiveWindow: 67108864
+  maxIdleTimeout: 60s
+  maxIncomingStreams: 2048
+  disablePathMTUDiscovery: false
+ignoreClientBandwidth: true
+disableUDP: false
+udpIdleTimeout: 120s
+resolver:
+  type: system
+acl:
+  inline:
+    - direct(geosite:ir)
+    - reject(geosite:blocked)
+    - reject(geoip:ir)
+masquerade:
+  type: 404'
+
 # تابعی برای نوشتن لاگ
 log_success() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - فایل $1 با موفقیت به روز شد" >> $LOG_FILE
@@ -209,6 +239,7 @@ update_file_if_needed() {
 # بررسی و به‌روزرسانی فایل‌ها
 update_file_if_needed "$ROUTE_FILE" "$NEW_ROUTE_JSON"
 update_file_if_needed "$SING_FILE" "$NEW_SING_ORIGIN_JSON"
+update_file_if_needed "$HY2CONFIG_FILE" "$NEW_HY2CONFIG_YAML"
 
 # اگر فایل‌ها تغییر کرده باشند، v2bx را restart کنید
 if [ $FILES_CHANGED -eq 1 ]; then
