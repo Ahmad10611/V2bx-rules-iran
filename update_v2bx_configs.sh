@@ -42,13 +42,13 @@ NEW_ROUTE_JSON='{
             "type": "field",
             "outboundTag": "block",
             "ip": [
-                "geoip:private",
-                "geoip:ir"
+                "geoip.dat:private",
+                "geoip.dat:ir"
             ]
         },
         {
             "domain": [
-                "geosite:google"
+                "geosite.dat:google"
             ],
             "outboundTag": "IPv4_out",
             "type": "field"
@@ -57,7 +57,7 @@ NEW_ROUTE_JSON='{
             "type": "field",
             "outboundTag": "block",
             "domain": [
-                "geosite:ir"
+                "geosite.dat:ir"
             ]
         },
         {
@@ -109,17 +109,17 @@ NEW_ROUTE_JSON='{
     ],
     "rule_set": [
         {
-            "tag": "geoip-ir",
+            "tag": "geoip.dat-ir",
             "type": "remote",
             "format": "binary",
-            "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs",
+            "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip.dat-ir.srs",
             "download_detour": "direct"
         },
         {
-            "tag": "geosite-ir",
+            "tag": "geosite.dat-ir",
             "type": "remote",
             "format": "binary",
-            "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
+            "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite.dat-ir.srs",
             "download_detour": "direct"
         }
     ]
@@ -146,13 +146,13 @@ NEW_SING_ORIGIN_JSON='{
       },
       {
         "rule_set": [
-          "geosite-ir"
+          "geosite.dat-ir"
         ],
         "outbound": "direct"
       },
       {
         "rule_set": [
-          "geoip-ir"
+          "geoip.dat-ir"
         ],
         "outbound": "direct"
       },
@@ -172,17 +172,17 @@ NEW_SING_ORIGIN_JSON='{
     ],
     "rule_set": [
       {
-        "tag": "geoip-ir",
+        "tag": "geoip.dat-ir",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs",
+        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip.dat-ir.srs",
         "download_detour": "direct"
       },
       {
-        "tag": "geosite-ir",
+        "tag": "geosite.dat-ir",
         "type": "remote",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
+        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite.dat-ir.srs",
         "download_detour": "direct"
       }
     ]
@@ -210,9 +210,9 @@ resolver:
   type: system
 acl:
   inline:
-    - direct(geosite:ir)
-    - reject(geosite:blocked)
-    - reject(geoip:ir)
+    - direct(geosite.dat:ir)
+    - reject(geosite.dat:blocked)
+    - reject(geoip.dat:ir)
 masquerade:
   type: 404'
 
