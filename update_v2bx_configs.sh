@@ -36,95 +36,47 @@ check_permissions "$HY2CONFIG_FILE"
 
 # محتوای جدید برای فایل route.json
 NEW_ROUTE_JSON='{
-    "domainStrategy": "AsIs",
-    "rules": [
-        {
-            "type": "field",
-            "outboundTag": "block",
-            "ip": [
-                "geoip.dat:private",
-                "geoip.dat:ir"
-            ]
-        },
-        {
-            "domain": [
-                "geosite.dat:google"
-            ],
-            "outboundTag": "IPv4_out",
-            "type": "field"
-        },
-        {
-            "type": "field",
-            "outboundTag": "block",
-            "domain": [
-                "geosite.dat:ir"
-            ]
-        },
-        {
-            "type": "field",
-            "outboundTag": "block",
-            "domain": [
-                "regexp:(api|ps|sv|offnavi|newvector|ulog.imap|newloc)(.map|).(baidu|n.shifen).com",
-                "regexp:(.+.|^)(360|so).(cn|com)",
-                "regexp:(Subject|HELO|SMTP)",
-                "regexp:(torrent|.torrent|peer_id=|info_hash|get_peers|find_node|BitTorrent|announce_peer|announce.php?passkey=)",
-                "regexp:(^.@)(guerrillamail|guerrillamailblock|sharklasers|grr|pokemail|spam4|bccto|chacuo|027168).(info|biz|com|de|net|org|me|la)",
-                "regexp:(.?)(xunlei|sandai|Thunder|XLLiveUD)(.)",
-                "regexp:(..||)(dafahao|mingjinglive|botanwang|minghui|dongtaiwang|falunaz|epochtimes|ntdtv|falundafa|falungong|wujieliulan|zhengjian).(org|com|net)",
-                "regexp:(ed2k|.torrent|peer_id=|announce|info_hash|get_peers|find_node|BitTorrent|announce_peer|announce.php?passkey=|magnet:|xunlei|sandai|Thunder|XLLiveUD|bt_key)",
-                "regexp:(.+.|^)(360).(cn|com|net)",
-                "regexp:(.*.||)(guanjia.qq.com|qqpcmgr|QQPCMGR)",
-                "regexp:(.*.||)(rising|kingsoft|duba|xindubawukong|jinshanduba).(com|net|org)",
-                "regexp:(.*.||)(netvigator|torproject).(com|cn|net|org)",
-                "regexp:(..||)(visa|mycard|gash|beanfun|bank).",
-                "regexp:(.*.||)(gov|12377|12315|talk.news.pts.org|creaders|zhuichaguoji|efcc.org|cyberpolice|aboluowang|tuidang|epochtimes|zhengjian|110.qq|mingjingnews|inmediahk|xinsheng|breakgfw|chengmingmag|jinpianwang|qi-gong|mhradio|edoors|renminbao|soundofhope|xizang-zhiye|bannedbook|ntdtv|12321|secretchina|dajiyuan|boxun|chinadigitaltimes|dwnews|huaglad|oneplusnews|epochweekly|cn.rfi).(cn|com|org|net|club|net|fr|tw|hk|eu|info|me)",
-                "regexp:(.*.||)(miaozhen|cnzz|talkingdata|umeng).(cn|com)",
-                "regexp:(.*.||)(mycard).(com|tw)",
-                "regexp:(.*.||)(gash).(com|tw)",
-                "regexp:(.bank.)",
-                "regexp:(.*.||)(pincong).(rocks)",
-                "regexp:(.*.||)(taobao).(com)",
-                "regexp:(.*.||)(laomoe|jiyou|ssss|lolicp|vv1234|0z|4321q|868123|ksweb|mm126).(com|cloud|fun|cn|gs|xyz|cc)",
-                "regexp:(flows|miaoko).(pages).(dev)"
-            ]
-        },
-        {
-            "type": "field",
-            "outboundTag": "block",
-            "ip": [
-                "127.0.0.1/32",
-                "10.0.0.0/8",
-                "fc00::/7",
-                "fe80::/10",
-                "172.16.0.0/12"
-            ]
-        },
-        {
-            "type": "field",
-            "outboundTag": "block",
-            "protocol": [
-                "bittorrent"
-            ]
-        }
-    ],
-    "rule_set": [
-        {
-            "tag": "geoip.dat-ir",
-            "type": "remote",
-            "format": "binary",
-            "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip.dat-ir.srs",
-            "download_detour": "direct"
-        },
-        {
-            "tag": "geosite.dat-ir",
-            "type": "remote",
-            "format": "binary",
-            "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite.dat-ir.srs",
-            "download_detour": "direct"
-        }
-    ]
-}'
-
+  "domainStrategy": "AsIs",
+  "rules": [
+    {
+      "type": "field",
+      "outboundTag": "direct",
+      "rule_set": ["iran"]
+    },
+    {
+      "type": "field",
+      "outboundTag": "block",
+      "ip": [
+        "geoip:private"
+      ]
+    },
+    {
+      "type": "field",
+      "outboundTag": "block",
+      "ip": [
+        "127.0.0.1/32",
+        "10.0.0.0/8",
+        "fc00::/7",
+        "fe80::/10",
+        "172.16.0.0/12"
+      ]
+    },
+    {
+      "type": "field",
+      "outboundTag": "block",
+      "protocol": ["bittorrent"]
+    }
+  ],
+  "rule_set": [
+    {
+      "tag": "iran",
+      "type": "local",
+      "format": "binary",
+      "path": "./iran.dat"
+    }
+  ]
+}
+'
 # محتوای جدید برای فایل sing_origin.json
 NEW_SING_ORIGIN_JSON='{
   "outbounds": [
@@ -141,49 +93,29 @@ NEW_SING_ORIGIN_JSON='{
   "route": {
     "rules": [
       {
+        "rule_set": [
+          "iran"
+        ],
+        "outbound": "direct"
+      },
+      {
         "ip_is_private": true,
-        "outbound": "block"
-      },
-      {
-        "rule_set": [
-          "geosite.dat-ir"
-        ],
-        "outbound": "direct"
-      },
-      {
-        "rule_set": [
-          "geoip.dat-ir"
-        ],
-        "outbound": "direct"
-      },
-      {
-        "domain_regex": [
-          "(.*.||)(example-regex1|example-regex2).(com|net)"
-        ],
         "outbound": "block"
       },
       {
         "outbound": "direct",
         "network": [
-          "udp",
-          "tcp"
+          "tcp",
+          "udp"
         ]
       }
     ],
     "rule_set": [
       {
-        "tag": "geoip.dat-ir",
-        "type": "remote",
+        "tag": "iran",
+        "type": "local",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip.dat-ir.srs",
-        "download_detour": "direct"
-      },
-      {
-        "tag": "geosite.dat-ir",
-        "type": "remote",
-        "format": "binary",
-        "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite.dat-ir.srs",
-        "download_detour": "direct"
+        "path": "./iran.dat"
       }
     ]
   },
@@ -196,23 +128,24 @@ NEW_SING_ORIGIN_JSON='{
 
 # محتوای جدید برای فایل hy2config.yaml
 NEW_HY2CONFIG_YAML='quic:
-  initStreamReceiveWindow: 16777216
-  maxStreamReceiveWindow: 33554432
-  initConnReceiveWindow: 33554432
-  maxConnReceiveWindow: 67108864
-  maxIdleTimeout: 60s
-  maxIncomingStreams: 2048
+  initStreamReceiveWindow: 8388608
+  maxStreamReceiveWindow: 8388608
+  initConnReceiveWindow: 20971520
+  maxConnReceiveWindow: 20971520
+  maxIdleTimeout: 30s
+  maxIncomingStreams: 1024
   disablePathMTUDiscovery: false
-ignoreClientBandwidth: true
+ignoreClientBandwidth: false
 disableUDP: false
-udpIdleTimeout: 120s
+udpIdleTimeout: 60s
 resolver:
   type: system
 acl:
   inline:
-    - direct(geosite.dat:ir)
-    - reject(geosite.dat:blocked)
+    - direct(geosite.dat:google)
+    - reject(geosite.dat:ir)
     - reject(geoip.dat:ir)
+    - reject(iran.dat)
 masquerade:
   type: 404'
 
