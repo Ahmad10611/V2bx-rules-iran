@@ -32,18 +32,17 @@ check_permissions "$SING_FILE"
 check_permissions "$HY2CONFIG_FILE"
 
 NEW_ROUTE_JSON='{
-  "domainStrategy": "AsIs",
+  "domainStrategy": "prefer_ipv4",
   "rules": [
     {
       "type": "field",
-      "outboundTag": "direct",
+      "ip": ["::/0"],
+      "outboundTag": "block"
     },
     {
       "type": "field",
       "outboundTag": "block",
-      "ip": [
-        "geoip:private"
-      ]
+      "ip": ["geoip.dat:private"]
     },
     {
       "type": "field",
@@ -60,10 +59,13 @@ NEW_ROUTE_JSON='{
       "type": "field",
       "outboundTag": "block",
       "protocol": ["bittorrent"]
+    },
+    {
+      "type": "field",
+      "outboundTag": "direct"
     }
-  ],
-}
-'
+  ]
+}'
 
 NEW_SING_ORIGIN_JSON='{
   "outbounds": [
@@ -80,7 +82,8 @@ NEW_SING_ORIGIN_JSON='{
   "route": {
     "rules": [
       {
-        "outbound": "direct"
+        "ip_cidr": ["::/0"],
+        "outbound": "block"
       },
       {
         "ip_is_private": true,
@@ -93,7 +96,7 @@ NEW_SING_ORIGIN_JSON='{
           "udp"
         ]
       }
-    ],
+    ]
   },
   "experimental": {
     "cache_file": {
