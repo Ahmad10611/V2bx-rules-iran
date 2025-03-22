@@ -82,7 +82,7 @@ NEW_SING_ORIGIN_JSON='{
   "route": {
     "rules": [
       {
-        "ip_cidr": ["::/0"],
+        "ip_cidr": ["::/0", "fc00::/7", "fe80::/10"],
         "outbound": "block"
       },
       {
@@ -91,10 +91,7 @@ NEW_SING_ORIGIN_JSON='{
       },
       {
         "outbound": "direct",
-        "network": [
-          "tcp",
-          "udp"
-        ]
+        "network": ["tcp", "udp"]
       }
     ]
   },
@@ -103,7 +100,8 @@ NEW_SING_ORIGIN_JSON='{
       "enabled": true
     }
   }
-}'
+}
+'
 
 NEW_HY2CONFIG_YAML='quic:
   initStreamReceiveWindow: 8388608
@@ -113,18 +111,23 @@ NEW_HY2CONFIG_YAML='quic:
   maxIdleTimeout: 30s
   maxIncomingStreams: 1024
   disablePathMTUDiscovery: false
+
 ignoreClientBandwidth: false
 disableUDP: false
 udpIdleTimeout: 60s
+
 resolver:
   type: system
+
 acl:
   inline:
     - direct(geosite.dat:google)
     - reject(geosite.dat:ir)
     - reject(geoip.dat:ir)
+
 masquerade:
-  type: 404'
+  type: 404
+'
 
 log_success() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - فایل $1 با موفقیت به روز شد" >> $LOG_FILE
