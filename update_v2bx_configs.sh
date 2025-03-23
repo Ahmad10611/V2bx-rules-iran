@@ -2,6 +2,7 @@
 
 ROUTE_FILE="/etc/V2bX/route.json"
 SING_FILE="/etc/V2bX/sing_origin.json"
+DNS_FILE="/etc/V2bX/dns.json"
 HY2CONFIG_FILE="/etc/V2bX/hy2config.yaml"
 LOG_FILE="/root/v2bx_config_update.log"
 FILES_CHANGED=0 
@@ -29,7 +30,9 @@ check_permissions() {
 
 check_permissions "$ROUTE_FILE"
 check_permissions "$SING_FILE"
+check_permissions "$DNS_FILE"
 check_permissions "$HY2CONFIG_FILE"
+
 
 NEW_ROUTE_JSON='{
   "domainStrategy": "prefer_ipv4",
@@ -41,31 +44,47 @@ NEW_ROUTE_JSON='{
     },
     {
       "type": "field",
-      "outboundTag": "block",
-      "ip": ["geoip.dat:private"]
-    },
-    {
-      "type": "field",
-      "outboundTag": "block",
       "ip": [
         "127.0.0.1/32",
         "10.0.0.0/8",
         "fc00::/7",
         "fe80::/10",
         "172.16.0.0/12"
-      ]
+      ],
+      "outboundTag": "block"
     },
     {
       "type": "field",
-      "outboundTag": "block",
-      "protocol": ["bittorrent"]
+      "ip": ["geoip:private"],
+      "outboundTag": "block"
     },
     {
       "type": "field",
+      "protocol": ["bittorrent"],
+      "outboundTag": "block"
+    },
+    {
+      "type": "field",
+      "domain": [
+        "regexp:(api|ps|sv|offnavi|ulog.imap|newloc)(.map|).(baidu|n.shifen).com",
+        "regexp:(.+.|^)(360|so).(cn|com)",
+        "regexp:(torrent|peer_id=|info_hash|BitTorrent|announce|magnet:)",
+        "regexp:(.*.||)(gov|epochtimes|falun|ntdtv|boxun|soundofhope|secretchina)",
+        "regexp:(.*.||)(miaozhen|cnzz|umeng).(cn|com)",
+        "regexp:(.*.||)(mycard|gash).(com|tw)",
+        "regexp:(.*.||)(pincong).(rocks)",
+        "regexp:(.*.||)(taobao).(com)"
+      ],
+      "outboundTag": "block"
+    },
+    {
+      "type": "field",
+      "network": ["tcp", "udp"],
       "outboundTag": "direct"
     }
   ]
-}'
+}
+'
 
 NEW_SING_ORIGIN_JSON='{
   "outbounds": [
@@ -75,10 +94,24 @@ NEW_SING_ORIGIN_JSON='{
       "domain_strategy": "prefer_ipv4"
     },
     {
-      "type": "block",
-      "tag": "block"
+      "tag": "block",
+      "type": "block"
     }
   ],
+  "dns": {
+    "servers": [
+      {
+        "address": "1.1.1.1",
+        "strategy": "ipv4_only"
+      },
+      {
+        "address": "8.8.8.8",
+        "strategy": "ipv4_only"
+      }
+    ],
+    "strategy": "prefer_ipv4",
+    "disable_cache": false
+  },
   "route": {
     "rules": [
       {
@@ -90,8 +123,21 @@ NEW_SING_ORIGIN_JSON='{
         "outbound": "block"
       },
       {
-        "outbound": "direct",
-        "network": ["tcp", "udp"]
+        "domain_regex": [
+          "(api|ps|sv|offnavi|ulog.imap|newloc)(.map|).(baidu|n.shifen).com",
+          "(.+.|^)(360|so).(cn|com)",
+          "(torrent|peer_id=|info_hash|BitTorrent|announce|magnet:)",
+          "(.*.||)(gov|epochtimes|falun|ntdtv|boxun|soundofhope|secretchina)",
+          "(.*.||)(miaozhen|cnzz|umeng).(cn|com)",
+          "(.*.||)(mycard|gash).(com|tw)",
+          "(.*.||)(pincong).(rocks)",
+          "(.*.||)(taobao).(com)"
+        ],
+        "outbound": "block"
+      },
+      {
+        "network": ["tcp", "udp"],
+        "outbound": "direct"
       }
     ]
   },
@@ -100,6 +146,22 @@ NEW_SING_ORIGIN_JSON='{
       "enabled": true
     }
   }
+}
+'
+
+NEW_DNS_JSON='{
+  "servers": [
+    {
+      "address": "1.1.1.1",
+      "strategy": "ipv4_only"
+    },
+    {
+      "address": "8.8.8.8",
+      "strategy": "ipv4_only"
+    }
+  ],
+  "strategy": "prefer_ipv4",
+  "disable_cache": false
 }
 '
 
@@ -149,6 +211,7 @@ update_file_if_needed() {
 
 update_file_if_needed "$ROUTE_FILE" "$NEW_ROUTE_JSON"
 update_file_if_needed "$SING_FILE" "$NEW_SING_ORIGIN_JSON"
+update_file_if_needed "$DNS_FILE" "$NEW_DNS_JSON"
 update_file_if_needed "$HY2CONFIG_FILE" "$NEW_HY2CONFIG_YAML"
 
 if [ $FILES_CHANGED -eq 1 ]; then
