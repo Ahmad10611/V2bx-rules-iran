@@ -100,12 +100,10 @@ NEW_SING_ORIGIN_JSON='{
     "servers": [
       {
         "address": "1.1.1.1",
-        "port": 53,
         "strategy": "prefer_ipv4"
       },
       {
         "address": "8.8.8.8",
-        "port": 53,
         "strategy": "prefer_ipv4"
       }
     ],
@@ -152,12 +150,10 @@ NEW_DNS_JSON='{
   "servers": [
     {
       "address": "1.1.1.1",
-      "port": 53,
       "strategy": "prefer_ipv4"
     },
     {
       "address": "8.8.8.8",
-      "port": 53,
       "strategy": "prefer_ipv4"
     }
   ],
