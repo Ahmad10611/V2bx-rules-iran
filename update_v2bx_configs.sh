@@ -15,7 +15,7 @@ check_permissions() {
         current_permissions=$(stat -c "%A" "$file_path")
         if [ "$current_permissions" != "$required_permissions" ]; then
             echo "مجوز $file_path نادرست است. تنظیم مجوز..."
-            chmod 755 "$file_path"  # تنظیم مجوز -rwxr-xr-x
+            chmod 755 "$file_path"
             echo "مجوز $file_path به $required_permissions تغییر یافت."
         else
             echo "مجوز $file_path صحیح است."
@@ -32,7 +32,6 @@ check_permissions "$ROUTE_FILE"
 check_permissions "$SING_FILE"
 check_permissions "$DNS_FILE"
 check_permissions "$HY2CONFIG_FILE"
-
 
 NEW_ROUTE_JSON='{
   "domainStrategy": "prefer_ipv4",
@@ -83,8 +82,7 @@ NEW_ROUTE_JSON='{
       "outboundTag": "direct"
     }
   ]
-}
-'
+}'
 
 NEW_SING_ORIGIN_JSON='{
   "outbounds": [
@@ -101,12 +99,20 @@ NEW_SING_ORIGIN_JSON='{
   "dns": {
     "servers": [
       {
-        "address": "1.1.1.1",
-        "strategy": "ipv4_only"
+        "address": "https://cloudflare-dns.com/dns-query",
+        "strategy": "prefer_ipv4"
       },
       {
-        "address": "8.8.8.8",
-        "strategy": "ipv4_only"
+        "address": "https://dns.google/dns-query",
+        "strategy": "prefer_ipv4"
+      },
+      {
+        "address": "9.9.9.9",
+        "strategy": "prefer_ipv4"
+      },
+      {
+        "address": "192.168.1.1",
+        "strategy": "prefer_ipv4"
       }
     ],
     "strategy": "prefer_ipv4",
@@ -146,24 +152,30 @@ NEW_SING_ORIGIN_JSON='{
       "enabled": true
     }
   }
-}
-'
+}'
 
 NEW_DNS_JSON='{
   "servers": [
     {
-      "address": "1.1.1.1",
-      "strategy": "ipv4_only"
+      "address": "https://cloudflare-dns.com/dns-query",
+      "strategy": "prefer_ipv4"
     },
     {
-      "address": "8.8.8.8",
-      "strategy": "ipv4_only"
+      "address": "https://dns.google/dns-query",
+      "strategy": "prefer_ipv4"
+    },
+    {
+      "address": "9.9.9.9",
+      "strategy": "prefer_ipv4"
+    },
+    {
+      "address": "192.168.1.1",
+      "strategy": "prefer_ipv4"
     }
   ],
   "strategy": "prefer_ipv4",
   "disable_cache": false
-}
-'
+}'
 
 NEW_HY2CONFIG_YAML='quic:
   initStreamReceiveWindow: 8388608
@@ -179,7 +191,8 @@ disableUDP: false
 udpIdleTimeout: 60s
 
 resolver:
-  type: system
+  type: udp
+  address: 1.1.1.1:53
 
 acl:
   inline:
