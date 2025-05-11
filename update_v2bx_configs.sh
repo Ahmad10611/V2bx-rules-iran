@@ -99,19 +99,13 @@ NEW_SING_ORIGIN_JSON='{
   "dns": {
     "servers": [
       {
-        "address": "https://cloudflare-dns.com/dns-query",
+        "address": "1.1.1.1",
+        "port": 53,
         "strategy": "prefer_ipv4"
       },
       {
-        "address": "https://dns.google/dns-query",
-        "strategy": "prefer_ipv4"
-      },
-      {
-        "address": "9.9.9.9",
-        "strategy": "prefer_ipv4"
-      },
-      {
-        "address": "192.168.1.1",
+        "address": "8.8.8.8",
+        "port": 53,
         "strategy": "prefer_ipv4"
       }
     ],
@@ -157,19 +151,13 @@ NEW_SING_ORIGIN_JSON='{
 NEW_DNS_JSON='{
   "servers": [
     {
-      "address": "https://cloudflare-dns.com/dns-query",
+      "address": "1.1.1.1",
+      "port": 53,
       "strategy": "prefer_ipv4"
     },
     {
-      "address": "https://dns.google/dns-query",
-      "strategy": "prefer_ipv4"
-    },
-    {
-      "address": "9.9.9.9",
-      "strategy": "prefer_ipv4"
-    },
-    {
-      "address": "192.168.1.1",
+      "address": "8.8.8.8",
+      "port": 53,
       "strategy": "prefer_ipv4"
     }
   ],
@@ -191,8 +179,7 @@ disableUDP: false
 udpIdleTimeout: 60s
 
 resolver:
-  type: udp
-  address: 1.1.1.1:53
+  type: system
 
 acl:
   inline:
