@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# مسیر فایل‌های پیکربندی
 ROUTE_FILE="/etc/V2bX/route.json"
 SING_FILE="/etc/V2bX/sing_origin.json"
 DNS_FILE="/etc/V2bX/dns.json"
@@ -7,6 +8,7 @@ HY2CONFIG_FILE="/etc/V2bX/hy2config.yaml"
 LOG_FILE="/root/v2bx_config_update.log"
 FILES_CHANGED=0 
 
+# تابع بررسی و تنظیم مجوز فایل‌ها
 check_permissions() {
     local file_path="$1"
     local required_permissions="-rwxr-xr-x"
@@ -33,6 +35,7 @@ check_permissions "$SING_FILE"
 check_permissions "$DNS_FILE"
 check_permissions "$HY2CONFIG_FILE"
 
+# محتوای اصلی برای route.json (بدون تغییر)
 NEW_ROUTE_JSON='{
   "domainStrategy": "prefer_ipv4",
   "rules": [
@@ -84,6 +87,7 @@ NEW_ROUTE_JSON='{
   ]
 }'
 
+# محتوای جدید برای sing_origin.json با تنظیمات DNS ساده
 NEW_SING_ORIGIN_JSON='{
   "outbounds": [
     {
@@ -98,17 +102,14 @@ NEW_SING_ORIGIN_JSON='{
   ],
   "dns": {
     "servers": [
-      {
-        "address": "1.1.1.1",
-        "strategy": "prefer_ipv4"
-      },
-      {
-        "address": "8.8.8.8",
-        "strategy": "prefer_ipv4"
-      }
+      "1.1.1.1",
+      "1.0.0.1",
+      "8.8.8.8",
+      "8.8.4.4",
+      "9.9.9.9",
+      "208.67.222.222"
     ],
-    "strategy": "prefer_ipv4",
-    "disable_cache": false
+    "tag": "dns_inbound"
   },
   "route": {
     "rules": [
@@ -146,21 +147,20 @@ NEW_SING_ORIGIN_JSON='{
   }
 }'
 
+# محتوای جدید برای dns.json با تنظیمات DNS ساده
 NEW_DNS_JSON='{
   "servers": [
-    {
-      "address": "1.1.1.1",
-      "strategy": "prefer_ipv4"
-    },
-    {
-      "address": "8.8.8.8",
-      "strategy": "prefer_ipv4"
-    }
+    "1.1.1.1",
+    "1.0.0.1",
+    "8.8.8.8",
+    "8.8.4.4",
+    "9.9.9.9",
+    "208.67.222.222"
   ],
-  "strategy": "prefer_ipv4",
-  "disable_cache": false
+  "tag": "dns_inbound"
 }'
 
+# محتوای اصلی برای hy2config.yaml (بدون تغییر)
 NEW_HY2CONFIG_YAML='quic:
   initStreamReceiveWindow: 8388608
   maxStreamReceiveWindow: 8388608
@@ -187,10 +187,12 @@ masquerade:
   type: 404
 '
 
+# تابع ثبت لاگ
 log_success() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - فایل $1 با موفقیت به روز شد" >> $LOG_FILE
 }
 
+# تابع به‌روزرسانی فایل‌ها
 update_file_if_needed() {
     local file_path="$1"
     local new_content="$2"
@@ -205,11 +207,13 @@ update_file_if_needed() {
     fi
 }
 
+# به‌روزرسانی فایل‌ها
 update_file_if_needed "$ROUTE_FILE" "$NEW_ROUTE_JSON"
 update_file_if_needed "$SING_FILE" "$NEW_SING_ORIGIN_JSON"
 update_file_if_needed "$DNS_FILE" "$NEW_DNS_JSON"
 update_file_if_needed "$HY2CONFIG_FILE" "$NEW_HY2CONFIG_YAML"
 
+# راه‌اندازی مجدد سرویس در صورت تغییر
 if [ $FILES_CHANGED -eq 1 ]; then
     echo "فایل‌ها تغییر کردند. v2bx در حال راه‌اندازی مجدد است..."
     cd /root && v2bx restart
