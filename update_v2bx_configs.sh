@@ -37,57 +37,37 @@ check_permissions "$HY2CONFIG_FILE"
 
 # محتوای اصلی برای route.json (بدون تغییر)
 NEW_ROUTE_JSON='{
-  "domainStrategy": "prefer_ipv4",
-  "rules": [
-    {
-      "type": "field",
-      "ip": ["::/0"],
-      "outboundTag": "block"
-    },
-    {
-      "type": "field",
-      "ip": [
-        "127.0.0.1/32",
-        "10.0.0.0/8",
-        "fc00::/7",
-        "fe80::/10",
-        "172.16.0.0/12"
-      ],
-      "outboundTag": "block"
-    },
-    {
-      "type": "field",
-      "ip": ["geoip:private"],
-      "outboundTag": "block"
-    },
-    {
-      "type": "field",
-      "protocol": ["bittorrent"],
-      "outboundTag": "block"
-    },
-    {
-      "type": "field",
-      "domain": [
-        "regexp:(api|ps|sv|offnavi|ulog.imap|newloc)(.map|).(baidu|n.shifen).com",
-        "regexp:(.+.|^)(360|so).(cn|com)",
-        "regexp:(torrent|peer_id=|info_hash|BitTorrent|announce|magnet:)",
-        "regexp:(.*.||)(gov|epochtimes|falun|ntdtv|boxun|soundofhope|secretchina)",
-        "regexp:(.*.||)(miaozhen|cnzz|umeng).(cn|com)",
-        "regexp:(.*.||)(mycard|gash).(com|tw)",
-        "regexp:(.*.||)(pincong).(rocks)",
-        "regexp:(.*.||)(taobao).(com)"
-      ],
-      "outboundTag": "block"
-    },
-    {
-      "type": "field",
-      "network": ["tcp", "udp"],
-      "outboundTag": "direct"
-    }
-  ]
+    "domainStrategy": "AsIs",
+    "rules": [
+        {
+            "type": "field",
+            "outboundTag": "block",
+            "ip": [
+                "geoip:private",
+                "127.0.0.1/32",
+                "10.0.0.0/8",
+                "172.16.0.0/12",
+                "fc00::/7",
+                "fe80::/10"
+            ]
+        },
+        {
+            "type": "field",
+            "outboundTag": "block",
+            "domain": [
+                "regexp:(torrent|BitTorrent|magnet:)"
+            ]
+        },
+        {
+            "type": "field",
+            "outboundTag": "block",
+            "protocol": [
+                "bittorrent"
+            ]
+        }
+    ]
 }'
 
-# محتوای جدید برای sing_origin.json با تنظیمات DNS اصلاح‌شده
 NEW_SING_ORIGIN_JSON='{
   "outbounds": [
     {
@@ -96,58 +76,27 @@ NEW_SING_ORIGIN_JSON='{
       "domain_strategy": "prefer_ipv4"
     },
     {
-      "tag": "block",
-      "type": "block"
+      "type": "block",
+      "tag": "block"
     }
   ],
-  "dns": {
-    "servers": [
-      {
-        "address": "8.8.8.8"
-      },
-      {
-        "address": "8.8.4.4"
-      },
-      {
-        "address": "1.1.1.1"
-      },
-      {
-        "address": "1.0.0.1"
-      },
-      {
-        "address": "9.9.9.9"
-      },
-      {
-        "address": "208.67.222.222"
-      }
-    ]
-  },
   "route": {
     "rules": [
-      {
-        "ip_cidr": ["::/0", "fc00::/7", "fe80::/10"],
-        "outbound": "block"
-      },
       {
         "ip_is_private": true,
         "outbound": "block"
       },
       {
         "domain_regex": [
-          "(api|ps|sv|offnavi|ulog.imap|newloc)(.map|).(baidu|n.shifen).com",
-          "(.+.|^)(360|so).(cn|com)",
-          "(torrent|peer_id=|info_hash|BitTorrent|announce|magnet:)",
-          "(.*.||)(gov|epochtimes|falun|ntdtv|boxun|soundofhope|secretchina)",
-          "(.*.||)(miaozhen|cnzz|umeng).(cn|com)",
-          "(.*.||)(mycard|gash).(com|tw)",
-          "(.*.||)(pincong).(rocks)",
-          "(.*.||)(taobao).(com)"
+          "(torrent|BitTorrent|magnet:)"
         ],
         "outbound": "block"
       },
       {
-        "network": ["tcp", "udp"],
-        "outbound": "direct"
+        "outbound": "direct",
+        "network": [
+          "udp","tcp"
+        ]
       }
     ]
   },
@@ -158,31 +107,15 @@ NEW_SING_ORIGIN_JSON='{
   }
 }'
 
-# محتوای جدید برای dns.json با تنظیمات DNS اصلاح‌شده
 NEW_DNS_JSON='{
-  "servers": [
-    {
-      "address": "8.8.8.8"
-    },
-    {
-      "address": "8.8.4.4"
-    },
-    {
-      "address": "1.1.1.1"
-    },
-    {
-      "address": "1.0.0.1"
-    },
-    {
-      "address": "9.9.9.9"
-    },
-    {
-      "address": "208.67.222.222"
-    }
-  ]
+    "servers": [
+        "1.1.1.1",
+        "8.8.8.8",
+        "localhost"
+    ],
+    "tag": "dns_inbound"
 }'
 
-# محتوای جدید برای hy2config.yaml با resolver اصلاح‌شده
 NEW_HY2CONFIG_YAML='quic:
   initStreamReceiveWindow: 8388608
   maxStreamReceiveWindow: 8388608
@@ -191,24 +124,16 @@ NEW_HY2CONFIG_YAML='quic:
   maxIdleTimeout: 30s
   maxIncomingStreams: 1024
   disablePathMTUDiscovery: false
-
 ignoreClientBandwidth: false
 disableUDP: false
 udpIdleTimeout: 60s
-
 resolver:
-  type: udp
-  addr: "8.8.8.8:53"
-
+  type: system
 acl:
   inline:
-    - direct(geosite.dat:google)
-    - reject(geosite.dat:ir)
-    - reject(geoip.dat:ir)
-
+    - direct(geosite:google)
 masquerade:
-  type: 404
-'
+  type: 404'
 
 # تابع ثبت لاگ
 log_success() {
