@@ -230,19 +230,16 @@ update_file_if_needed() {
     fi
 }
 
-# به‌روزرسانی فایل‌ها
 update_file_if_needed "$ROUTE_FILE" "$NEW_ROUTE_JSON"
 update_file_if_needed "$SING_FILE" "$NEW_SING_ORIGIN_JSON"
 update_file_if_needed "$DNS_FILE" "$NEW_DNS_JSON"
 update_file_if_needed "$HY2CONFIG_FILE" "$NEW_HY2CONFIG_YAML"
 
-# پاک کردن کش DNS
-echo "پاک کردن کش DNS..."
-sudo systemd-resolve --flush-caches 2>/dev/null || true
-sudo systemctl restart V2bX
-
-# بررسی فایروال
-echo "بررسی فایروال برای پورت DNS..."
-sudo ufw allow 53 || true
+if [ $FILES_CHANGED -eq 1 ]; then
+    echo "فایل‌ها تغییر کردند. v2bx در حال راه‌اندازی مجدد است..."
+    cd /root && v2bx restart
+else
+    echo "هیچ فایلی تغییر نکرده است. نیازی به راه‌اندازی مجدد نیست."
+fi
 
 echo "پیکربندی فایل‌ها بررسی و در صورت نیاز به‌روزرسانی شدند."
