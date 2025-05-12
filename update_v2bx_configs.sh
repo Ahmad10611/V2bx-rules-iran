@@ -103,16 +103,16 @@ NEW_SING_ORIGIN_JSON='{
   "dns": {
     "servers": [
       {
-        "address": "1.1.1.1"
-      },
-      {
-        "address": "1.0.0.1"
-      },
-      {
         "address": "8.8.8.8"
       },
       {
         "address": "8.8.4.4"
+      },
+      {
+        "address": "1.1.1.1"
+      },
+      {
+        "address": "1.0.0.1"
       },
       {
         "address": "9.9.9.9"
@@ -120,8 +120,7 @@ NEW_SING_ORIGIN_JSON='{
       {
         "address": "208.67.222.222"
       }
-    ],
-    "tag": "dns_inbound"
+    ]
   },
   "route": {
     "rules": [
@@ -163,16 +162,16 @@ NEW_SING_ORIGIN_JSON='{
 NEW_DNS_JSON='{
   "servers": [
     {
-      "address": "1.1.1.1"
-    },
-    {
-      "address": "1.0.0.1"
-    },
-    {
       "address": "8.8.8.8"
     },
     {
       "address": "8.8.4.4"
+    },
+    {
+      "address": "1.1.1.1"
+    },
+    {
+      "address": "1.0.0.1"
     },
     {
       "address": "9.9.9.9"
@@ -180,11 +179,10 @@ NEW_DNS_JSON='{
     {
       "address": "208.67.222.222"
     }
-  ],
-  "tag": "dns_inbound"
+  ]
 }'
 
-# محتوای اصلی برای hy2config.yaml (بدون تغییر)
+# محتوای جدید برای hy2config.yaml با resolver اصلاح‌شده
 NEW_HY2CONFIG_YAML='quic:
   initStreamReceiveWindow: 8388608
   maxStreamReceiveWindow: 8388608
@@ -199,7 +197,8 @@ disableUDP: false
 udpIdleTimeout: 60s
 
 resolver:
-  type: system
+  type: udp
+  addr: "8.8.8.8:53"
 
 acl:
   inline:
@@ -237,12 +236,13 @@ update_file_if_needed "$SING_FILE" "$NEW_SING_ORIGIN_JSON"
 update_file_if_needed "$DNS_FILE" "$NEW_DNS_JSON"
 update_file_if_needed "$HY2CONFIG_FILE" "$NEW_HY2CONFIG_YAML"
 
-# راه‌اندازی مجدد سرویس در صورت تغییر
-if [ $FILES_CHANGED -eq 1 ]; then
-    echo "فایل‌ها تغییر کردند. v2bx در حال راه‌اندازی مجدد است..."
-    cd /root && v2bx restart
-else
-    echo "هیچ فایلی تغییر نکرده است. نیازی به راه‌اندازی مجدد نیست."
-fi
+# پاک کردن کش DNS
+echo "پاک کردن کش DNS..."
+sudo systemd-resolve --flush-caches 2>/dev/null || true
+sudo systemctl restart V2bX
+
+# بررسی فایروال
+echo "بررسی فایروال برای پورت DNS..."
+sudo ufw allow 53 || true
 
 echo "پیکربندی فایل‌ها بررسی و در صورت نیاز به‌روزرسانی شدند."
