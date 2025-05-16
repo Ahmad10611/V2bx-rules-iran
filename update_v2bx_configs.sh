@@ -107,13 +107,70 @@ NEW_SING_ORIGIN_JSON='{
   }
 }'
 
+# پیکربندی DNS بهبود یافته با سرورهای متنوع و تنظیمات پیشرفته
 NEW_DNS_JSON='{
+    "hosts": {
+        "localhost": "127.0.0.1",
+        "domain:googleapis.cn": "googleapis.com"
+    },
     "servers": [
+        {
+            "address": "1.1.1.1",
+            "port": 53,
+            "domains": ["geosite:geolocation-!cn"],
+            "expectIPs": ["geoip:!cn"],
+            "clientIP": "0.0.0.0"
+        },
+        {
+            "address": "8.8.8.8",
+            "port": 53,
+            "domains": ["geosite:geolocation-!cn"],
+            "expectIPs": ["geoip:!cn"]
+        },
+        {
+            "address": "9.9.9.9",
+            "port": 53,
+            "domains": ["geosite:geolocation-!cn"],
+            "expectIPs": ["geoip:!cn"]
+        },
+        {
+            "address": "https://dns.google/dns-query",
+            "domains": ["geosite:google"],
+            "skipFallback": true
+        },
+        {
+            "address": "https://cloudflare-dns.com/dns-query",
+            "domains": ["geosite:cloudflare"],
+            "skipFallback": true
+        },
+        {
+            "address": "https://1.1.1.1/dns-query",
+            "domains": ["geosite:category-ads-all"],
+            "skipFallback": true
+        },
+        {
+            "address": "localhost"
+        }
+    ],
+    "tag": "dns_inbound",
+    "queryStrategy": "UseIPv4",
+    "disableCache": false,
+    "disableFallback": false,
+    "disableFallbackIfMatch": true,
+    "clientIp": "0.0.0.0",
+    "nameServer": [
         "1.1.1.1",
         "8.8.8.8",
-        "localhost"
+        "9.9.9.9",
+        "223.5.5.5",
+        "223.6.6.6"
     ],
-    "tag": "dns_inbound"
+    "fallbackStrategy": "ipv4",
+    "fallbacks": [
+        "8.8.4.4",
+        "1.0.0.1"
+    ],
+    "cacheSize": 4096
 }'
 
 NEW_HY2CONFIG_YAML='quic:
